@@ -1,0 +1,193 @@
+{
+	"info": {
+		"_postman_id": "c7f8d9e0-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+		"name": "Real-Time Inventory & Dynamic Pricing API",
+		"description": "Postman Collection for WebFlux + Reactive Redis + Mongo Real-Time Inventory & Dynamic Surge Pricing Engine",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "01 - Create Product (Auto-Saves productId to Environment)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 201) {",
+							"    var responseData = pm.response.json();",
+							"    if (responseData.id) {",
+							"        pm.environment.set(\"productId\", responseData.id);",
+							"        console.log(\"Auto-saved productId: \" + responseData.id);",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"PlayStation 5 Pro\",\n  \"description\": \"Next-Gen Gaming Console Flash Sale\",\n  \"basePrice\": 699.99,\n  \"totalStock\": 100,\n  \"availableStock\": 100\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/products",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "02 - Get Product Details",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/products/{{productId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"products",
+						"{{productId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "03 - Reserve Stock (Standard Flash Sale - 2 Units)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"productId\": \"{{productId}}\",\n  \"quantity\": 2\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/products/reserve",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"products",
+						"reserve"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "04 - Stream Real-Time Updates (SSE)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "text/event-stream",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/products/{{productId}}/stream",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"products",
+						"{{productId}}",
+						"stream"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "05 - Trigger Surge Pricing (Reserve 60 Units -> Stock Drops Below 50%)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"productId\": \"{{productId}}\",\n  \"quantity\": 60\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/products/reserve",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"products",
+						"reserve"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "06 - Test Out-Of-Stock Conflict (Attempt to Reserve 100 Units)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"productId\": \"{{productId}}\",\n  \"quantity\": 100\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/products/reserve",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"products",
+						"reserve"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

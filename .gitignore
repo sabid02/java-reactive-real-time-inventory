@@ -1,0 +1,17 @@
+# Environment Variables File
+.env
+.env.local
+
+# Gradle build output
+.gradle/
+build/
+out/
+bin/
+
+# IDE files
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/

@@ -1,0 +1,24 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: auth-service
+  data:
+    mongodb:
+      # Reads MONGODB_URI from .env file
+      uri: ${MONGODB_URI}
+      auto-index-creation: true # Ensures unique indexes (@Indexed(unique = true)) are generated automatically
+
+# JWT Security Configuration
+jwt:
+  # Reads JWT_SECRET from .env file
+  secret: ${JWT_SECRET}
+  # Reads JWT_EXPIRATION from .env file (default: 86400000 ms = 24 Hours)
+  expiration: ${JWT_EXPIRATION:86400000}
+
+logging:
+  level:
+    root: INFO
+    com.example.auth: DEBUG
+    org.springframework.data.mongodb: DEBUG
