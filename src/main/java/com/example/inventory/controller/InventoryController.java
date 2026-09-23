@@ -1,5 +1,6 @@
 package com.example.inventory.controller;
 
+import com.example.auth.dto.response.ApiResponse;
 import com.example.inventory.dto.ReservationRequest;
 import com.example.inventory.dto.ReservationResponse;
 import com.example.inventory.dto.StockUpdateEvent;
@@ -44,26 +45,28 @@ public class InventoryController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<ResponseEntity<Product>> createProduct(@RequestBody Product product) {
+    public Mono<ResponseEntity<ApiResponse<Product>>> createProduct(@RequestBody Product product) {
         return inventoryService.createProduct(product)
-                .map(createdProduct -> ResponseEntity.status(HttpStatus.CREATED).body(createdProduct));
+                .map(createdProduct -> ResponseEntity.status(HttpStatus.CREATED)
+                        .body(ApiResponse.success("Product created successfully", createdProduct)));
     }
 
     /**
      * Fetches details for a single product by ID.
      */
     @GetMapping("/{id}")
-    public Mono<ResponseEntity<Product>> getProductById(@PathVariable String id) {
+    public Mono<ResponseEntity<ApiResponse<Product>>> getProductById(@PathVariable String id) {
         return inventoryService.getProductById(id)
-                .map(ResponseEntity::ok)
-                .defaultIfEmpty(ResponseEntity.notFound().build());
+                .map(product -> ResponseEntity.ok(ApiResponse.success("Product fetched successfully", product)))
+                .defaultIfEmpty(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.error("Product not found", 404, "Product with id " + id + " not found", null)));
     }
 
     /**
      * Reserves stock for a flash-sale item using atomic Redis Lua scripts.
      */
     @PostMapping("/reserve")
-    public Mono<ResponseEntity<ReservationResponse>> reserveStock(
+    public Mono<ResponseEntity<ApiResponse<ReservationResponse>>> reserveStock(
             @Valid @RequestBody ReservationRequest request,
             Mono<Principal> principalMono) {
 
@@ -73,9 +76,10 @@ public class InventoryController {
                 .flatMap(userId -> inventoryService.reserveStock(request.getProductId(), userId, request.getQuantity()))
                 .map(response -> {
                     if (response.isSuccess()) {
-                        return ResponseEntity.ok(response);
+                        return ResponseEntity.ok(ApiResponse.success("Stock reserved successfully", response));
                     } else {
-                        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+                        return ResponseEntity.status(HttpStatus.CONFLICT)
+                                .body(ApiResponse.error(response.getMessage(), 409, response.getMessage(), response));
                     }
                 });
     }

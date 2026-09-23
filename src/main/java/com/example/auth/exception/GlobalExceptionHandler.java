@@ -24,7 +24,12 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(UserAlreadyExistsException.class)
     public Mono<ResponseEntity<ApiResponse<Void>>> handleUserAlreadyExists(UserAlreadyExistsException ex) {
-        ApiResponse<Void> response = ApiResponse.error(ex.getMessage());
+        ApiResponse<Void> response = ApiResponse.error(
+                "Registration Failed",
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                ex.getMessage()
+        );
         return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response));
     }
 
@@ -32,17 +37,18 @@ public class GlobalExceptionHandler {
      * Handles DTO validation errors (@Valid failures on RegisterRequest/LoginRequest) (HTTP 400 Bad Request).
      */
     @ExceptionHandler(WebExchangeBindException.class)
-    public Mono<ResponseEntity<ApiResponse<Map<String, String>>>> handleValidationExceptions(WebExchangeBindException ex) {
+    public Mono<ResponseEntity<ApiResponse<Void>>> handleValidationExceptions(WebExchangeBindException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getFieldErrors().forEach(error ->
                 errors.put(error.getField(), error.getDefaultMessage())
         );
 
-        ApiResponse<Map<String, String>> response = ApiResponse.<Map<String, String>>builder()
-                .success(false)
-                .message("Validation failed")
-                .data(errors)
-                .build();
+        ApiResponse<Void> response = ApiResponse.error(
+                "Validation Failed",
+                HttpStatus.BAD_REQUEST.value(),
+                "Validation error occurred",
+                errors
+        );
 
         return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response));
     }
@@ -52,7 +58,12 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(BadCredentialsException.class)
     public Mono<ResponseEntity<ApiResponse<Void>>> handleBadCredentials(BadCredentialsException ex) {
-        ApiResponse<Void> response = ApiResponse.error("Invalid username or password");
+        ApiResponse<Void> response = ApiResponse.error(
+                "Authentication Failed",
+                HttpStatus.UNAUTHORIZED.value(),
+                "Invalid username or password",
+                "Invalid username or password"
+        );
         return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response));
     }
 
@@ -61,7 +72,13 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(org.springframework.data.redis.RedisConnectionFailureException.class)
     public Mono<ResponseEntity<ApiResponse<Void>>> handleRedisException(org.springframework.data.redis.RedisConnectionFailureException ex) {
-        ApiResponse<Void> response = ApiResponse.error("Redis connection error: Unable to reach Redis server on localhost:6379. Please ensure Redis is running.");
+        String msg = "Redis connection error: Unable to reach Redis server on localhost:6379. Please ensure Redis is running.";
+        ApiResponse<Void> response = ApiResponse.error(
+                "Service Unavailable",
+                HttpStatus.SERVICE_UNAVAILABLE.value(),
+                msg,
+                msg
+        );
         return Mono.just(ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response));
     }
 
@@ -76,7 +93,12 @@ public class GlobalExceptionHandler {
         } else if (ex.getMessage() != null && ex.getMessage().contains("Mongo")) {
             errorMessage = "Database connection error: Unable to reach MongoDB. Please try again.";
         }
-        ApiResponse<Void> response = ApiResponse.error(errorMessage);
+        ApiResponse<Void> response = ApiResponse.error(
+                "Database Error",
+                HttpStatus.SERVICE_UNAVAILABLE.value(),
+                errorMessage,
+                errorMessage
+        );
         return Mono.just(ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response));
     }
 
@@ -85,7 +107,12 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public Mono<ResponseEntity<ApiResponse<Void>>> handleGenericException(Exception ex) {
-        ApiResponse<Void> response = ApiResponse.error("An unexpected error occurred: " + ex.getMessage());
+        ApiResponse<Void> response = ApiResponse.error(
+                "Internal Server Error",
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                ex.getMessage(),
+                ex.getMessage()
+        );
         return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response));
     }
 }
