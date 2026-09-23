@@ -26,7 +26,6 @@ A high-concurrency, non-blocking backend engine designed for flash-sale scenario
 | **Database** | **Reactive MongoDB** | Asynchronous document storage for user profiles and product catalogs. |
 | **Security & Auth** | **Spring Security 6 + JJWT (0.12.5)** | Reactive security context, BCrypt password hashing, stateless JWT authentication. |
 | **Build Tool** | **Gradle** | Dependency management, build automation, and compiler parameter support. |
-| **Configuration** | **Spring Dotenv (`.env`)** | Externalized configuration management for secrets and environment variables. |
 | **Code Generation** | **Lombok** | Boilerplate reduction for models, builders, and loggers. |
 | **Validation** | **Jakarta Validation (Hibernate Validator)** | Request payload validation with reactive error binding. |
 | **API Testing** | **Postman Collections** | Pre-configured environment and collections for Auth & Inventory flows. |
@@ -106,24 +105,12 @@ sequenceDiagram
 
 ## 🚦 Getting Started
 
-### 1. Prerequisites
+### Prerequisites
 - **Java 17 JDK** or higher
-- **Redis Server** (running on port `6379`)
-- **MongoDB** (running on port `27017`)
+- **Redis Server**
+- **MongoDB**
 
-### 2. Environment Configuration
-Create a `.env` file in the project root:
-
-```env
-MONGODB_URI=mongodb://localhost:27017/reactive_inventory
-REDIS_HOST=localhost
-REDIS_PORT=6379
-JWT_SECRET=your_super_secret_signing_key_at_least_256_bits_long
-JWT_EXPIRATION_MS=86400000
-SERVER_PORT=8080
-```
-
-### 3. Build & Run
+### Build & Run
 
 ```bash
 # Build the application
@@ -135,19 +122,6 @@ SERVER_PORT=8080
 
 ---
 
-## 📡 API Endpoints Overview
-
-### Authentication
-- `POST /api/v1/auth/register` - Create a new user account
-- `POST /api/v1/auth/login` - Authenticate and retrieve JWT bearer token
-
-### Inventory & Streaming
-- `GET /api/v1/products/{id}/stream` - **Public SSE Stream**: Live real-time updates for stock levels and dynamic price adjustments
-- `POST /api/v1/products/{id}/reserve` - **Protected (Bearer Token)**: Atomically reserves product quantity for flash sales
-- `GET /api/v1/products/{id}` - Retrieve current product details and price
-
----
-
 ## 🧪 Testing
 
 Run automated tests via Gradle:
@@ -155,5 +129,3 @@ Run automated tests via Gradle:
 ```bash
 ./gradlew test
 ```
-
-Includes unit and integration tests utilizing `reactor-test` (`StepVerifier`) and `spring-security-test`.
